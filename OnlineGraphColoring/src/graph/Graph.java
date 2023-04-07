@@ -2,6 +2,7 @@ package graph;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public class Graph {
@@ -57,10 +58,12 @@ public class Graph {
 		edges.add(e);
 		e.getStart().getIncidents().add(e);
 		e.getEnd().getIncidents().add(e);
+		e.getStart().getAdjacents().add(e.getEnd());
+		e.getEnd().getAdjacents().add(e.getStart());
 		adjList.put(e.getStart().getName(), e.getStart().getIncidents());
 		adjList.put(e.getEnd().getName(), e.getEnd().getIncidents());
-//		System.out.println("After");
-//		this.printGraph();
+		//		System.out.println("After");
+		//		this.printGraph();
 	}
 	
 	public void removeEdge(Edge e) {
@@ -157,23 +160,114 @@ public class Graph {
 		int[][] adjMatrix = new int[n][n];
 		for(int i =0;i<n;i++) {
 			for(int j = 0; j<n; j++ ) {
-				 if(this.containsEdge(String.valueOf(i),String.valueOf(j)))
+				if(this.containsEdge(String.valueOf(i),String.valueOf(j)))
 					adjMatrix[i][j] = 1;
-				 else
-					 adjMatrix[i][j] = 0;
-					
+				else
+					adjMatrix[i][j] = 0;
+
 			}
 		}
 		String res ="";
 		for(int i =0;i<n;i++) {
 			for(int j = 0; j<n; j++ ) {
-				 res+=adjMatrix[i][j]+",";
+				res+=adjMatrix[i][j]+",";
 			}
 			res = res.substring(0,res.lastIndexOf(','));
 			res+="\n";
 		}
 		System.out.println(res);
 		return adjMatrix;
+	}
+
+	public void FirstFitAlgo(Vertex v) {
+
+		if(v.getIncidents().size() == 0 ) {
+			v.setColor(1);
+			return;
+		}
+
+		HashSet<Integer> neighboursC = new HashSet<Integer>();
+		for(Vertex u : v.getAdjacents()) {
+			neighboursC.add(u.getColor());
+		}
+
+
+		//		ArrayList<Vertex> neighboursV = new ArrayList<Vertex>();
+		//		
+		//		for(Edge e1 : v.getIncidents()) {
+		//			Vertex n = e1.getOtherVertex(v.getName());
+		//			neighboursV.add(n);
+		//			neighboursC.add(n.getColor());
+		//		}
+		//		System.out.println(neighboursC.toString());
+
+
+		v.setColor(findFit(neighboursC));
+
+
+	}
+
+	private static boolean isSafeVertex(Vertex v, HashSet<Vertex> vSet) {
+		for(Vertex u : vSet)
+			if(u.getAdjacents().contains(v))
+				return false;
+		return true;
+	}
+
+	public void CBIP_Algo(Vertex v) {
+
+		if(this.getVertices().size() == 1 || v.getAdjacents().size()==0)
+			v.setColor(1);
+		else {
+			HashSet<Vertex> vSet1 = new HashSet<Vertex>();
+			HashSet<Vertex> vSet2 = new HashSet<Vertex>();
+
+			vSet1.add(v);
+
+			for(Vertex u : this.getVertices())
+				if(isSafeVertex(u,vSet1))
+					vSet1.add(u);
+				else
+					vSet2.add(u);
+
+			System.out.println("Independent Set 1");
+			printHashSet(vSet1);
+			System.out.println("Independent Set 2");
+			printHashSet(vSet2);
+			//			
+			HashSet<Integer> otherSetColors = getColorSet(vSet2);
+
+
+			v.setColor(findFit(otherSetColors));
+		}
+
+	}
+
+	static int findFit(HashSet<Integer> set) {
+		int i =1;
+		for(int j : set) {
+			if(set.contains(i))
+				i++;
+			else
+				return i;
+		}
+		return i;	
+	}
+
+	private static void printHashSet(HashSet<Vertex> vSet) {
+
+		System.out.println("++++++++++++");
+		for(Vertex u : vSet)
+			System.out.print(u.getName()+",");
+
+		System.out.println();
+
+	}
+	private static HashSet<Integer> getColorSet (HashSet<Vertex> vSet2){
+		HashSet<Integer> otherSetColors = new HashSet<Integer>();
+		for(Vertex u : vSet2)
+			otherSetColors.add(u.getColor());
+		return otherSetColors;
 	}
 	
 	

@@ -9,14 +9,14 @@ public class Vertex {
 	private String name;
 	private int color;
 	private ArrayList<Edge> incidents;
-	//private ArrayList<Vertex> adjacents;
+	private ArrayList<Vertex> adjacents;
 	
 	public Vertex(String name){
 		this.id = ++Vid;
 		this.color = -1;
 		this.name = name;
 		this.setIncidents(new ArrayList<Edge>());
-		//this.setAdjacents(new ArrayList<Vertex>());
+		this.setAdjacents(new ArrayList<Vertex>());
 	}
 	
 	
@@ -27,13 +27,13 @@ public class Vertex {
 //	}
 
 
-//	public ArrayList<Vertex> getAdjacents() {
-//		return adjacents;
-//	}
-//
-//	public void setAdjacents(ArrayList<Vertex> adjacents) {
-//		this.adjacents = adjacents;
-//	}
+	public ArrayList<Vertex> getAdjacents() {
+		return adjacents;
+	}
+
+	public void setAdjacents(ArrayList<Vertex> adjacents) {
+		this.adjacents = adjacents;
+	}
 
 	public int getId() {
 		return id;
