@@ -3,23 +3,28 @@ package graph;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
+
+
 public class Graph {
-	
+
 	private ArrayList<Vertex> vertices;
 	private ArrayList<Edge> edges;
-	
+	private double compRatio;
+
 	private int actualColorable;
 	private int observedColorable;
 	private HashMap<String,ArrayList<Edge>> adjList;
-	
+
 	public Graph(int actualColorable) {
 		super();
 		this.actualColorable = actualColorable;
 		this.vertices = new ArrayList<Vertex>();
 		this.edges = new ArrayList<Edge>();
 		this.adjList = new HashMap<String,ArrayList<Edge>>();
+		this.setCompRatio(0.0);
 	}
 
 	public ArrayList<Vertex> getVertices() {
@@ -50,10 +55,13 @@ public class Graph {
 		return observedColorable;
 	}
 
-	public void setObservedColorable(int observedColorable) {
-		this.observedColorable = observedColorable;
+	public void setObservedColorable() {
+		int max = -1;
+		for(Vertex u : this.vertices)
+			max = (max<=u.getColor())?u.getColor():max;
+		this.observedColorable = max;
 	}
-	
+
 	public void addEdge(Edge e) {
 		edges.add(e);
 		e.getStart().getIncidents().add(e);
@@ -62,19 +70,17 @@ public class Graph {
 		e.getEnd().getAdjacents().add(e.getStart());
 		adjList.put(e.getStart().getName(), e.getStart().getIncidents());
 		adjList.put(e.getEnd().getName(), e.getEnd().getIncidents());
-		//		System.out.println("After");
-		//		this.printGraph();
 	}
-	
+
 	public void removeEdge(Edge e) {
 		edges.remove(edges.indexOf(e));
 	}
-	
+
 	public void addVertex(Vertex v) {
 		vertices.add(v);
 		adjList.put(v.getName(), v.getIncidents());
 	}
-	
+
 	public void removeVertex(Vertex v) {
 		Vertex v1 = null;
 		for(Edge e : v.getIncidents()) {
@@ -86,75 +92,73 @@ public class Graph {
 		}
 		vertices.remove(vertices.indexOf(v));
 	}
-	
+
 	public void printGraph() {
-		//adjList.entrySet().forEach(System.out::println);
+		
 		for (Map.Entry<String,ArrayList<Edge>> V :adjList.entrySet()){
 			String s1 = V.getKey();
 			String res = s1+": ";
-            for(Edge e : V.getValue()) {
-            	String s = e.getEdgeName().replaceAll("-", "").replaceAll(s1, "").trim();
-            	res+=s+" ";
-            }
-            res = res.substring(0,res.lastIndexOf(' '));
-            System.out.println(res);
-        }
+			for(Edge e : V.getValue()) {
+				String s = e.getEdgeName().replaceAll("-", "").replaceAll(s1, "").trim();
+				res+=s+" ";
+			}
+			res = res.substring(0,res.lastIndexOf(' '));
+			System.out.println(res);
+		}
 	}
-	
+
 	public boolean containsVertex(Vertex v) {
 		for(Vertex v1 : vertices)
 			if(v1.getName() == v.getName())
 				return true;
 		return false;
 	}
-	
+
 	public boolean containsVertex(String v) {
 		for(Vertex v1 : vertices)
 		{
 			//System.out.println(v1.getName());
 			if(v1.getName().equals(v))
 				return true;
-			
+
 		}
 		return false;
 	}
-	
+
 	public boolean containsEdge(Edge e) {
 		for(Edge e1 : edges)
 			if(e1.getEdgeName().equals(e.getStart().getName()+"-"+e.getEnd().getName()) || e1.getEdgeName().equals(e.getEnd().getName()+"-"+e.getStart().getName()))
 				return true;
 		return false;
 	}
-	
+
 	public boolean containsEdge(String s, String e) {
 		for(Edge e1 : edges)
 			if(e1.getEdgeName().equals(s+"-"+e) || e1.getEdgeName().equals(e+"-"+s))
 				return true;
 		return false;
 	}
-	
+
 	public Vertex getVertex(String s) {
 		for(Vertex v1 : vertices)
 		{
 			//System.out.println(v1.getName());
 			if(v1.getName().equals(s))
 				return v1;
-			
+
 		}
 		return null;
 	}
-	
+
 	public void printVertexColors() {
-		
+
 		System.out.println("Vertex : Color");
 		for(Vertex v : vertices)
 		{
-			//System.out.println(v1.getName());
 			System.out.println(v.getName()+ " : "+v.getColor());
-			
 		}
 	}
-	
+
 	public int[][] getAdjacencyMatrix(){
 		int n = this.getVertices().size();
 		int[][] adjMatrix = new int[n][n];
@@ -192,16 +196,6 @@ public class Graph {
 		}
 
 
-		//		ArrayList<Vertex> neighboursV = new ArrayList<Vertex>();
-		//		
-		//		for(Edge e1 : v.getIncidents()) {
-		//			Vertex n = e1.getOtherVertex(v.getName());
-		//			neighboursV.add(n);
-		//			neighboursC.add(n.getColor());
-		//		}
-		//		System.out.println(neighboursC.toString());
-
-
 		v.setColor(findFit(neighboursC));
 
 
@@ -219,29 +213,40 @@ public class Graph {
 		if(this.getVertices().size() == 1 || v.getAdjacents().size()==0)
 			v.setColor(1);
 		else {
-			HashSet<Vertex> vSet1 = new HashSet<Vertex>();
-			HashSet<Vertex> vSet2 = new HashSet<Vertex>();
-
-			vSet1.add(v);
-
-			for(Vertex u : this.getVertices())
-				if(isSafeVertex(u,vSet1))
-					vSet1.add(u);
-				else
-					vSet2.add(u);
-
-			System.out.println("Independent Set 1");
-			printHashSet(vSet1);
-			System.out.println("Independent Set 2");
-			printHashSet(vSet2);
-			//			
+						
+			List<HashSet<Vertex>> partitions = new ArrayList<>();
+			partitions.add(new HashSet<Vertex>());
+			partitions.get(0).add(v);
+			
+			for(Vertex u : this.getVertices()) {
+				if(v.getName() == u.getName())
+					continue;
+				boolean added = false;
+				for(HashSet<Vertex> vSet : partitions) {
+					if(isSafeVertex(u,vSet)) {
+							vSet.add(u);
+							added = true;
+							break;
+					}
+				}
+				if(!added) {
+					partitions.add(new HashSet<Vertex>());
+					partitions.get(partitions.size()-1).add(u);
+				}
+			}
+//			printPartitions(independentSets);
+			HashSet<Vertex> vSet2 = new HashSet<>();
+			for(int i = 1; i <partitions.size();i++) {
+				vSet2.addAll(partitions.get(i));
+			}
+			
 			HashSet<Integer> otherSetColors = getColorSet(vSet2);
-
-
 			v.setColor(findFit(otherSetColors));
 		}
 
 	}
+
+
 
 	static int findFit(HashSet<Integer> set) {
 		int i =1;
@@ -253,6 +258,7 @@ public class Graph {
 		}
 		return i;	
 	}
+	
 
 	private static void printHashSet(HashSet<Vertex> vSet) {
 
@@ -263,13 +269,28 @@ public class Graph {
 		System.out.println();
 
 	}
+	
 	private static HashSet<Integer> getColorSet (HashSet<Vertex> vSet2){
 		HashSet<Integer> otherSetColors = new HashSet<Integer>();
 		for(Vertex u : vSet2)
 			otherSetColors.add(u.getColor());
 		return otherSetColors;
 	}
-	
-	
-	
+
+	public double getCompRatio() {
+		return compRatio;
+	}
+
+	public void setCompRatio(double compRatio) {
+		this.compRatio = compRatio;
+	}
+
+	public void calculateCompRatio() {
+		double cr = (double)this.observedColorable/(double)this.actualColorable;
+		System.out.println("Competitve Ratio for this graph is : "+cr);
+		this.setCompRatio(cr);
+	}
+
+
+
 }
