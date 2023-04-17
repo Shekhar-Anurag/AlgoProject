@@ -3,7 +3,6 @@ package graph;
 import java.util.ArrayList;
 
 public class Vertex {
-	private static int Vid =0;
 	
 	private int id;
 	private String name;
@@ -12,7 +11,7 @@ public class Vertex {
 	private ArrayList<Vertex> adjacents;
 	
 	public Vertex(String name){
-		this.id = ++Vid;
+		this.id = Integer.parseInt(name);
 		this.color = -1;
 		this.name = name;
 		this.setIncidents(new ArrayList<Edge>());
@@ -68,7 +67,12 @@ public class Vertex {
 		return incidents;
 	}
 	
-	
+	public void printAdjacents() {
+		System.out.println("Neighnors of "+ this.name);
+		for(Vertex v : this.getAdjacents())
+			System.out.print(v.getName()+",");
+		System.out.println("done");
+	}
 	
 	
 }

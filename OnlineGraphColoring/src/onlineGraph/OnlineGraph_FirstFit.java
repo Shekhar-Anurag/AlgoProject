@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -14,12 +13,12 @@ public class OnlineGraph_FirstFit {
 	static final String filePathPrefix2 = System.getProperty("user.dir")+"/Inputs/2-colorable/";
 	static final String filePathPrefix3 = System.getProperty("user.dir")+"/Inputs/3-colorable/";
 	static final String filePathPrefix4 = System.getProperty("user.dir")+"/Inputs/4-colorable/";
-	static int k =2;
-	static List<String> vertices = Arrays.asList("50");
-//	static List<String> vertices = Arrays.asList("50","100","200","400","800","1600");
+//	static int k =2;
+//	static List<String> vertices = Arrays.asList("800");
+	static List<String> vertices = Arrays.asList("50","100","200","400","800","1600");
 
 	public static void main(String[] args) throws FileNotFoundException {
-		// TODO Auto-generated method stub
+		int k = 4;
 		String inDir ="";
 		switch(k) {
 		case 2 : inDir = filePathPrefix2;
@@ -39,7 +38,7 @@ public class OnlineGraph_FirstFit {
 				System.out.println("Reading graph from file : "+ inFilePath);
 				if(inFilePath.contains(".DS"))
 					continue;
-				Graph g = readGraph(inFilePath,2);
+				Graph g = readGraph(inFilePath,k);
 				compRatioSum +=g.getCompRatio();
 			}
 			Double avgCompRatio = compRatioSum/100;
@@ -82,14 +81,15 @@ public class OnlineGraph_FirstFit {
 				g.addEdge(edge);
 
 			}
-
-			g.CBIP_Algo(srcVertex);
+			g.FirstFitAlgo(srcVertex);
 
 			g.setObservedColorable();
+			
 
 			//				        g.printVertexColors();
 
 		}
+		System.out.println("# colors used : "+g.getObservedColorable());
 		g.calculateCompRatio();
 //		g.getAdjacencyMatrix();
 		myReader.close();

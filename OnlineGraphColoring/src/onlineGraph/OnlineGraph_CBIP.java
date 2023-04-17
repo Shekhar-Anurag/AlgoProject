@@ -15,8 +15,8 @@ public class OnlineGraph_CBIP {
 	static final String filePathPrefix4 = System.getProperty("user.dir")+"/Inputs/4-colorable/";
 
 	static int k =2;
-	static List<String> vertices = Arrays.asList("50");
-//	static List<String> vertices = Arrays.asList("50","100","200","400","800","1600");
+//	static List<String> vertices = Arrays.asList("50");
+	static List<String> vertices = Arrays.asList("50","100","200","400","800","1600");
 
 	public static void main(String[] args) throws FileNotFoundException {
 		// TODO Auto-generated method stub
@@ -39,7 +39,7 @@ public class OnlineGraph_CBIP {
 				System.out.println("Reading graph from file : "+ inFilePath);
 				if(inFilePath.contains(".DS"))
 					continue;
-				Graph g = readGraph(inFilePath,2);
+				Graph g = readGraph(inFilePath,k);
 				compRatioSum +=g.getCompRatio();
 			}
 			Double avgCompRatio = compRatioSum/100;

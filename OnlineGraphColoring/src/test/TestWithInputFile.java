@@ -1,15 +1,13 @@
 package test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
-
 import graph.Edge;
 import graph.Graph;
 import graph.Vertex;
-import graphGenerator.KColorableGraphGenerator2;
+
 
 public class TestWithInputFile {
 
@@ -26,9 +24,9 @@ public class TestWithInputFile {
 		System.out.println("Enter 1 for First Fit  or 2 for CBIP ");
 		int choice = scan.nextInt();
 
+
 		System.out.println("Generating graph :");
 		String filePath = System.getProperty("user.dir")+"/Inputs/TestFile.txt";
-//		KColorableGraphGenerator2.generateGraph(n, k,filePath);
 		System.out.println("Graph generated");
 
 
@@ -59,7 +57,6 @@ public class TestWithInputFile {
 					continue;
 				if(!g.containsVertex(destination.trim())) {
 					destVertex = new Vertex(destination.trim());
-					//	        		System.out.println("Adding Vertex "+ destVertex.getName());
 					g.addVertex(destVertex);
 				}
 				else
@@ -67,25 +64,27 @@ public class TestWithInputFile {
 
 				if(!g.containsEdge(source,destination)) {
 					Edge edge = new Edge(srcVertex,destVertex);
-					//	        			System.out.println("Adding Edge "+ edge.getEdgeName());
 					g.addEdge(edge);
 				}
 
 			}
-			//			System.out.println("***************");
+//			g.printGraph();
+//			
+//						System.out.println("***************");
 
 			if(choice == 1)
 				g.FirstFitAlgo(srcVertex);
 			if(choice == 2)
 				g.CBIP_Algo(srcVertex);
 			g.setObservedColorable();
-
+//			g.printVertexColors();
 
 
 		}
 
 		//		g.getAdjacencyMatrix();
-		g.printGraph();
+	//	g.printGraph();
+		System.out.println("***************");
 		g.printVertexColors();
 		g.calculateCompRatio();
 		myReader.close();

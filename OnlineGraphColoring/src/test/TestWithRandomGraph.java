@@ -1,15 +1,13 @@
 package test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
-
 import graph.Edge;
 import graph.Graph;
 import graph.Vertex;
-import graphGenerator.KColorableGraphGenerator2;
+import graphGenerator.KColorableGraphGenerator3;
 
 public class TestWithRandomGraph {
 
@@ -26,7 +24,7 @@ public class TestWithRandomGraph {
 
 		System.out.println("Generating graph :");
 		String filePath = System.getProperty("user.dir")+"/Inputs/RandomGraph.txt";
-		KColorableGraphGenerator2.generateGraph(n, k,filePath);
+		KColorableGraphGenerator3.generateGraph(n, k,filePath);
 		System.out.println("Graph generated");
 
 
@@ -83,7 +81,8 @@ public class TestWithRandomGraph {
 		}
 
 		//		g.getAdjacencyMatrix();
-		g.printGraph();
+//		g.printGraph();
+		System.out.println("***************");
 		g.printVertexColors();
 		g.calculateCompRatio();
 		myReader.close();

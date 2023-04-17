@@ -3,8 +3,12 @@ package graph;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+
 
 
 
@@ -14,17 +18,21 @@ public class Graph {
 	private ArrayList<Edge> edges;
 	private double compRatio;
 
-	private int actualColorable;
+	private double actualColorable;
 	private int observedColorable;
 	private HashMap<String,ArrayList<Edge>> adjList;
+	List<Set<Vertex>> sets;
 
+	//	private List<Boolean> visited;
 	public Graph(int actualColorable) {
 		super();
 		this.actualColorable = actualColorable;
+		System.out.println("k color : "+ this.actualColorable);
 		this.vertices = new ArrayList<Vertex>();
 		this.edges = new ArrayList<Edge>();
 		this.adjList = new HashMap<String,ArrayList<Edge>>();
 		this.setCompRatio(0.0);
+		//		this.visited = new ArrayList<Boolean>();
 	}
 
 	public ArrayList<Vertex> getVertices() {
@@ -43,7 +51,7 @@ public class Graph {
 		this.edges = edges;
 	}
 
-	public int getActualColorable() {
+	public double getActualColorable() {
 		return actualColorable;
 	}
 
@@ -68,6 +76,8 @@ public class Graph {
 		e.getEnd().getIncidents().add(e);
 		e.getStart().getAdjacents().add(e.getEnd());
 		e.getEnd().getAdjacents().add(e.getStart());
+		//		e.getStart().printAdjacents();
+		//		e.getEnd().printAdjacents();
 		adjList.put(e.getStart().getName(), e.getStart().getIncidents());
 		adjList.put(e.getEnd().getName(), e.getEnd().getIncidents());
 	}
@@ -94,7 +104,7 @@ public class Graph {
 	}
 
 	public void printGraph() {
-		
+
 		for (Map.Entry<String,ArrayList<Edge>> V :adjList.entrySet()){
 			String s1 = V.getKey();
 			String res = s1+": ";
@@ -201,52 +211,87 @@ public class Graph {
 
 	}
 
-	private static boolean isSafeVertex(Vertex v, HashSet<Vertex> vSet) {
-		for(Vertex u : vSet)
-			if(u.getAdjacents().contains(v))
-				return false;
-		return true;
+	public void CBIP_Algo(Vertex vertex) {
+		if(this.getVertices().size() == 1 || vertex.getAdjacents().size()==0)
+			vertex.setColor(1);
+		else {			
+			sets = new ArrayList<Set<Vertex>>();
+			sets.add(new HashSet<Vertex>());
+			sets.add(new HashSet<Vertex>());
+			
+			createParitionedSets(vertex);
+			
+			int findOppositeSet = sets.get(0).contains(vertex) ? 1 : 0;
+			Set<Vertex> requiredPartition = sets.get(findOppositeSet);
+			
+			HashSet<Integer> oppositeSetColors = getColorSet((HashSet<Vertex>) requiredPartition);
+			vertex.setColor(findFit(oppositeSetColors));
+		}
 	}
 
-	public void CBIP_Algo(Vertex v) {
 
-		if(this.getVertices().size() == 1 || v.getAdjacents().size()==0)
-			v.setColor(1);
-		else {
-						
-			List<HashSet<Vertex>> partitions = new ArrayList<>();
-			partitions.add(new HashSet<Vertex>());
-			partitions.get(0).add(v);
-			
-			for(Vertex u : this.getVertices()) {
-				if(v.getName() == u.getName())
-					continue;
-				boolean added = false;
-				for(HashSet<Vertex> vSet : partitions) {
-					if(isSafeVertex(u,vSet)) {
-							vSet.add(u);
-							added = true;
-							break;
+	public void createParitionedSets(Vertex vertex) {
+
+		ArrayList<Boolean> visited = new ArrayList<>();
+		for(int i = 0; i< this.getVertices().size();i++)
+			visited.add(false);
+
+		for (int i = 0; i < this.getVertices().size(); i++) {
+			if(i==vertex.getId())
+				continue;
+			if (!visited.get(i)) {
+				Queue<Vertex> queue = new LinkedList<>();
+				Vertex v = getVertexByID(i);
+				sets.get(0).add(v);
+				queue.add(v);
+				while (!queue.isEmpty()) {
+					Vertex curr = queue.poll();
+					visited.set(curr.getId(), true);
+					int currSet = sets.get(0).contains(curr) ? 0 : 1;
+					for (Vertex neighbor : curr.getAdjacents()) {
+						if(visited.get(neighbor.getId()))
+							continue;
+						if (!sets.get(0).contains(neighbor) && !sets.get(1).contains(neighbor)) {
+							sets.get(1 - currSet).add(neighbor);
+							queue.add(neighbor);
+
+						}
+//						else if (sets.get(currentSet).contains(neighbor)) {
+//							System.out.println("I am here, shouldn't be");
+//							printSet(sets);
+//							System.out.println("__________________");
+//							return ;
+//						}
 					}
 				}
-				if(!added) {
-					partitions.add(new HashSet<Vertex>());
-					partitions.get(partitions.size()-1).add(u);
-				}
 			}
-//			printPartitions(independentSets);
-			HashSet<Vertex> vSet2 = new HashSet<>();
-			for(int i = 1; i <partitions.size();i++) {
-				vSet2.addAll(partitions.get(i));
-			}
-			
-			HashSet<Integer> otherSetColors = getColorSet(vSet2);
-			v.setColor(findFit(otherSetColors));
+
 		}
 
 	}
 
 
+
+	public static void printSet( List<Set<Vertex>> sets)
+	{
+		int c =0;
+		for(Set<Vertex> s : sets) {
+			c++;
+			System.out.print("Set"+c+" : ");
+			for(Vertex v : s) {
+				System.out.print(v.getId()+",");
+			}
+			System.out.println();
+		}
+
+	}
+
+	private Vertex getVertexByID(int id) {
+		for(Vertex v : this.getVertices())
+			if (v.getId() == id)
+				return v;
+		return null;
+	}
 
 	static int findFit(HashSet<Integer> set) {
 		int i =1;
@@ -258,7 +303,7 @@ public class Graph {
 		}
 		return i;	
 	}
-	
+
 
 	private static void printHashSet(HashSet<Vertex> vSet) {
 
@@ -269,7 +314,7 @@ public class Graph {
 		System.out.println();
 
 	}
-	
+
 	private static HashSet<Integer> getColorSet (HashSet<Vertex> vSet2){
 		HashSet<Integer> otherSetColors = new HashSet<Integer>();
 		for(Vertex u : vSet2)
